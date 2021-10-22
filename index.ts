@@ -8,15 +8,17 @@ var db = new sqlite3.Database(_config.sqlite.file);
 
 const client = new Client({ intents: [ Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES ] });
 
-type trickOrTreat = '' | 'trick' | 'treat';
+type TrickOrTreatMode = '' | 'trick' | 'treat';
 
-const state : {
+interface TrickOrTreatState {
   waiting : boolean;
   waitingId: any,
   message: Message | null,
-  trickOrTreat: trickOrTreat,
+  trickOrTreat: TrickOrTreatMode,
   trickOrTreater: { name : string } | null,
-} = {
+}
+
+const state : TrickOrTreatState = {
   waiting: false,
   waitingId: null,
   message: null,
@@ -94,11 +96,40 @@ client.on('messageCreate', (message) => {
 });
 
 const sendInventory = async (userId : string) => {
-  // TODO:
+  db.all("SELECT * FROM user_items WHERE user_id = ?", [ userId ], async (error, result) => {
+    const itemsTable = result.map((row, index) => {
+      return `${row.item_key.padEnd(24)} | ${row.count.toString().padStart(5)}`;
+    }).join('\n');
+
+    const channel = client.channels.cache.get(_config.discord.channel) as TextChannel;
+
+    const itemsHeader = `<@${userId}>'s items:\n\`\`\`\nItem                     | Count\n====================================\n`
+    const itemsFooter = '\n```';
+
+    const message = await channel.send(itemsHeader + itemsTable + itemsFooter);
+
+    setTimeout(() => {
+      // delete the bot's message after the timeout
+      if (message) {
+        message.delete();
+      }
+    }, 120000);
+  });
 }
 
-const sendLeaderboard = async() => {
-  // TODO:
+const sendLeaderboard = async () => {
+  db.all("SELECT * FROM users ORDER BY points DESC", async (error, result) => {
+    const pointsTable = result.map((row, index) => {
+      return `${(index + 1).toString().padStart(4)} | ${row.points.toString().padStart(6)} | ${row.name}`;
+    }).join('\n');
+
+    const channel = client.channels.cache.get(_config.discord.channel) as TextChannel;
+
+    const pointsHeader = '```\nRank | Points | User\n====================================\n'
+    const pointsFooter = '\n```';
+
+    await channel.send(pointsHeader + pointsTable + pointsFooter);
+  });
 }
 
 const sendTrickOrTreat = async () => {
@@ -122,7 +153,7 @@ const sendTrickOrTreat = async () => {
   }, 300000);
 }
 
-const getTrickOrTreater = (value : trickOrTreat) => {
+const getTrickOrTreater = (value : TrickOrTreatMode) => {
   switch (value) {
     case 'trick':
       return _halloween['trickers'][Math.floor(Math.random() * _halloween['trickers'].length)];
