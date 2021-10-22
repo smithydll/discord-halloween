@@ -1,0 +1,30 @@
+{
+  "name": "discord-halloween",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node ./index.ts",
+    "init": "ts-node ./init.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smithydll/discord-halloween.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/smithydll/discord-halloween/issues"
+  },
+  "homepage": "https://github.com/smithydll/discord-halloween#readme",
+  "dependencies": {
+    "@types/sqlite3": "^3.1.7",
+    "discord.js": "^13.2.0",
+    "sqlite3": "^5.0.2"
+  },
+  "devDependencies": {
+    "ts-node": "^10.3.0",
+    "typescript": "^4.4.4"
+  }
+}
